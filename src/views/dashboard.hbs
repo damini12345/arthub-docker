@@ -1,0 +1,32 @@
+<html>
+    <head>
+        <title>Dashboard</title>
+        <link rel="stylesheet" href="css/style.css">
+    </head>
+    <body>
+        <div class="main-container">
+            <div class="header">
+                <div class="logo">
+                    ArtHub
+                </div>
+                <div class="right-btn">
+                  <div class="upload-btn"><a href="/upload"><b>Upload now</b></a></div>
+                  <div class="profile-btn"><a href="/profile"><b>Profile</b></a></div>
+                  <div class="logout-btn"><a href="/logout"><b>Logout</b></a></div>
+                </div>
+            </div>
+<main class="grid">
+  {{#if imagesData}}
+   {{#each imagesData}}
+      <div class="grid-container">
+          <img src="{{this.images}}" alt="Sample photo">
+          <span class="creator-name"><b>Uploaded by:</b> {{profileName}}</span>
+      </div>
+    {{/each}}
+    {{else}}
+    No data found
+    {{/if}}
+</main>
+        </div>
+    </body>
+</html>

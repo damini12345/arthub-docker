@@ -1,0 +1,26 @@
+<html>
+    <head>
+        <title>Dashboard</title>
+        <link rel="stylesheet" href="css/style.css">
+    </head>
+    <body>
+        <div class="main-container">
+            <div class="header">
+                <div class="logo">
+                    ArtHub
+                </div>
+                <div class="right-btn">
+                  <div class="upload-btn"><a href="/upload"><b>Upload now</b></a></div>
+                  <div class="profile-btn"><a href="/profile"><b>Profile</b></a></div>
+                  <div class="logout-btn"><a href="/logout"><b>Logout</b></a></div>
+                </div>
+            </div>
+<main class="grid">
+    <form method="post" action="/uploadImages" enctype="multipart/form-data">
+      <input type="file" name="images" multiple>
+      <button type="submit">upload</button>
+    </form>
+</main>
+        </div>
+    </body>
+</html>

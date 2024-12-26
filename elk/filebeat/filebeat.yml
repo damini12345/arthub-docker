@@ -1,0 +1,8 @@
+filebeat.inputs:
+  - type: log
+    enabled: true
+    paths:
+      - /arthub/logs/*.log  # Path to the Node.js logs inside the container
+
+output.elasticsearch:
+  hosts: ["http://elasticsearch:9200"]  # Change to your Elasticsearch address

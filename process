@@ -1,0 +1,66 @@
+created 3 files in directory:
+1) .dockerignore
+2) docker-compose.yml
+3) Dockerfile
+
+Add files in .dockerignore which you don't want to push, this includes node_modules, docker files etc
+
+Add data to Dockerfile
+1) FROM node:20 -> Specifies the base image for the container. Downloads and uses the official Node.js image with version 20.
+2) WORKDIR /arthub -> Sets the working directory inside the container to /arthub.COPY, RUN, or CMD instructions will execute in this directory.
+3) COPY package*.json ./ ->  Copies the package.json and package-lock.json files from the host to the container.
+4) RUN npm install -> Then installs all the dependencies listed in package.json. Runs npm install inside the container, downloading and installing the Node.js dependencies.
+5) COPY . . -> Copies all the remaining application files from the host to the container. Moves everything in the current directory (on the host) to the working directory (/arthub) in the container.
+6) EXPOSE 3000 -> Informs Docker that the container listens on port 3000.Specifies that the application inside the container will be accessible via port 3000.
+7) CMD ["node", "index.js"] -> Specifies the command to run when the container starts. Executes node index.js inside the container, starting the Node.js application.
+
+Add data in docker-compose.yml
+services:
+  app:
+    build: -> Specifies how to build the Docker image for this service.
+      context: . -> Sets the current directory (.) as the build context. Docker will use this directory to look for the Dockerfile and application files.
+      dockerfile: Dockerfile -> Explicitly points to the Dockerfile in the current directory for building the image.
+    ports: -> Maps ports from the container to the host machine.
+      - "3000:3000" -> First 3000 is local port and second 3000 is of container
+    volumes: -> Defines file/directory mappings between the host and the container for persistence or real-time changes.
+      - ./:/arthub -> Maps the current directory (./) on the host to /arthub in the container. This allows real-time changes to application code on the host to reflect in the container.
+      - /arthub/node_modules -> Ensures that the node_modules directory inside the container is managed separately and doesn't interfere with the host directory.
+    environment: -> Sets environment variables for the container.
+      - MONGO_URL=mongodb://db:27017/arthub -> Specifies the MongoDB connection string. The hostname db points to the MongoDB service defined below.
+    depends_on: -> Specifies dependencies between services.
+      - db -> Ensures the db service (MongoDB) starts before the app service.
+    networks: -> Connects the service to a Docker network.
+      - arthub-network -> Links the app service to the arthub-network for communication with other services.
+
+  db:
+    image: mongo -> Uses the official MongoDB image from Docker Hub.
+    container_name: mongodb -> custom name for container
+    ports:
+      - "27017:27017"
+    volumes: -> Defines a persistent volume for MongoDB data.
+      - mongo_data:/data/db ->  Maps the named volume mongo_data to the container’s /data/db directory, ensuring MongoDB data persists even if the container restarts.
+    networks:
+      - arthub-network
+
+volumes: -> Declares a named volume for storing MongoDB data.
+  mongo_data:
+
+networks: ->  Defines a custom Docker network for communication between the app and db services.
+  arthub-network:
+
+Run cmd: docker compose up -d
+
+After making changes if needed need to down compose and create build:
+docker compose down --volumes
+docker build -t pr-original-app .
+docker compose up -d
+
+docker tag 55a99798769b daminimahawer/arthub:v1.0
+docker tag 267cb32f89d2 daminimahawer/arthub:v2.0
+docker tag 820b214536a1 daminimahawer/arthub:v3.0
+
+docker login
+
+docker push daminimahawer/arthub:v1.0
+docker push daminimahawer/arthub:v2.0
+docker push daminimahawer/arthub:v3.0

@@ -1,0 +1,53 @@
+<html>
+    <head>
+        <title>Profile</title>
+        <link rel="stylesheet" href="css/style.css">
+    </head>
+    <body>
+        <div class="main-container">
+            <div class="header">
+                <div class="logo">
+                    ArtHub
+                </div>
+                <div class="right-btn">
+                  <div class="upload-btn"><a href="/upload"><b>Upload now</b></a></div>
+                  <div class="profile-btn"><a href="/"><b>Home</b></a></div>
+                  <div class="logout-btn"><a href="/logout"><b>Logout</b></a></div>
+                </div>
+            </div>
+    <div style="margin: 10px 120px;">
+        <span style="color:#04AA6D; font-size: 20px">{{profileName}}</span> <button onclick="editShow()">Edit Profile Name</button>
+        <div style="display: none;" id="editProfileName">
+            <form action="/editProfileName/{{userId}}" method="post">
+                <input type="text" name="pname" value="{{profileName}}">
+                <button onclick="editHide()" type="submit">Edit</button>
+            </form>
+        </div>
+        
+    </div>
+<main class="grid">
+    
+  {{#if imagesData}}
+   {{#each imagesData}}
+      <div class="grid-container">
+          <img src="{{this.images}}" alt="Sample photo">
+          <div>
+            <a href="/deleteImage/{{this._id}}">Delete</a>
+          </div>
+      </div>
+    {{/each}}
+    {{else}}
+    No data found
+    {{/if}}
+</main>
+        </div>
+    </body>
+    <script>
+        function editShow() {
+            document.getElementById("editProfileName").style.display = "block";
+        }
+        function editHide() {
+            document.getElementById("editProfileName").style.display = "none";
+        }
+    </script>
+</html>

@@ -1,0 +1,37 @@
+<html>
+    <head>
+        <title>Login / Register</title>
+        <link rel="stylesheet" href="css/style.css">
+        <link rel="stylesheet" href="css/login.css">
+    </head>
+    <body>
+        <div class="container">
+             <div class="imgcontainer">
+                    <div class="avatar">
+                        ArtHub
+                    </div>
+                </div>
+            <form action="/register" method="post">
+                <div class="form-container">
+                    <label for="uname"><b>Username</b></label>
+                    <input type="text" placeholder="Enter Username" name="uname" required>
+
+                    <label for="name"><b>Profile Name</b></label>
+                    <input type="text" placeholder="Enter Profile Name" name="pname" required>
+
+                    <label for="psw"><b>Password</b></label>
+                    <input type="password" placeholder="Enter Password" name="password" required>
+                    
+                    <button type="submit">Register</button>
+                </div>
+
+                {{!-- <div class="container" style="background-color:#f1f1f1">
+                    <span class="psw">Forgot <a href="#">password?</a></span>
+                </div> --}}
+                </form>
+                <div>
+                    <a class="signup-link" href="/">Login</a>
+                </div>
+        </div>
+    </body>
+</html>

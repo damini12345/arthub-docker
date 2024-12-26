@@ -1,0 +1,175 @@
+services:
+  app:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    ports:
+      - "3000:3000"
+    volumes:
+      - ./:/arthub
+      - /arthub/node_modules
+      - logs_volume:/arthub/logs
+    environment:
+      - MONGO_URL=${MONGOURL}
+      - CACHE_HOST=redis
+      - CACHE_PORT=6379
+    healthcheck:
+      test: ["CMD", "curl", "--fail", "http://127.0.0.1:3000/"]
+      interval: 30s
+      timeout: 5s
+      retries: 3
+      start_period: 10s
+    depends_on:
+      - db
+      - logstash
+    networks:
+      - arthub-network
+    # deploy:
+    #   resources:
+    #     limits:
+    #       cpus: "0.5"
+    #       memory: 256M
+    cpuset: 0,1
+    mem_limit: 256m 
+
+  admin:
+    build:
+      context: ./admin
+      dockerfile: Dockerfile
+    ports:
+      - "3001:3001"
+    environment:
+      - MONGO_URL=${MONGOURL}
+    volumes:
+      - ./admin:/arthub
+      - /arthub/node_modules
+    depends_on:
+      - db
+    networks:
+      - arthub-network
+
+  worker:
+    image: node:20-alpine
+    container_name: worker_service
+    working_dir: /worker
+    volumes:
+      - ./worker:/worker
+    environment:
+      - CACHE_HOST=redis
+      - CACHE_PORT=6379
+    networks:
+      - arthub-network
+    command: node /worker/worker.js
+
+  redis:
+    image: redis
+    container_name: redis_cache
+    networks:
+      - arthub-network
+    ports:
+      - "6379:6379"
+
+  db:
+    image: mongo
+    container_name: mongodb
+    ports:
+      - "27017:27017"
+    volumes:
+      - mongo_data:/data/db
+    networks:
+      - arthub-network
+    restart: unless-stopped #untill manually stopped
+            #always
+            #on-failure - restart container if it exits with an error
+            #on-failure:5 - restart the container up to 5 times it it fails
+    #environment:
+      #MYSQL_ROOT_PASSWORD=${DB_PASSWORD}
+      #MYSQL
+
+  prometheus:
+    image: prom/prometheus:latest
+    container_name: prometheus
+    volumes:
+      - ./prometheus.yml:/etc/prometheus/prometheus.yml
+    ports:
+      - "9090:9090"
+    networks:
+      - arthub-network
+
+  cadvisor:
+    image: gcr.io/cadvisor/cadvisor:latest
+    container_name: cadvisor
+    ports:
+      - "8080:8080"
+    volumes:
+      - /:/rootfs:ro
+      - /var/run:/var/run:ro
+      - /sys:/sys:ro
+      - /var/lib/docker/:/var/lib/docker:ro
+    networks:
+      - arthub-network
+
+  backup:
+    image: busybox
+    container_name: backup_all_data
+    volumes:
+      - mongo_data:/data/db
+      - logs_volume:/data/logs
+      - ./:/data/code
+      - ./backups:/backup
+    entrypoint: ["sh", "-c", "while true; do tar -czf /backup/auto_backup_$(date +%Y%m%d%H%M%S).tar.gz -C /data . && sleep 86400; done"]
+    networks:
+      - arthub-network
+
+  elasticsearch:
+    image: docker.elastic.co/elasticsearch/elasticsearch:8.9.0
+    container_name: elasticsearch
+    environment:
+      - discovery.type=single-node
+      - xpack.security.enabled=false
+      - xpack.license.self_generated.type= basic
+    ports:
+      - "9200:9200"
+      - "9300:9300"
+    networks:
+      - arthub-network
+
+  filebeat:
+    image: docker.elastic.co/beats/filebeat:8.9.0
+    container_name: filebeat
+    user: root
+    volumes:
+      - ./filebeat.yml:/etc/filebeat/filebeat.yml  # Mount Filebeat config
+      - ./logs:/arthub/logs  # Mount logs directory
+    depends_on:
+      - app
+      - elasticsearch
+
+
+  logstash:
+    image: docker.elastic.co/logstash/logstash:8.9.0
+    container_name: logstash
+    ports:
+      - "5000:5000"
+      - "9600:9600"
+    volumes:
+      - ./logstash.conf:/usr/share/logstash/pipeline/logstash.conf
+    networks:
+      - arthub-network
+
+  kibana:
+    image: docker.elastic.co/kibana/kibana:8.9.0
+    container_name: kibana
+    ports:
+      - "5601:5601"
+    environment:
+      - ELASTICSEARCH_HOSTS=http://elasticsearch:9200
+    networks:
+      - arthub-network
+
+volumes:
+  mongo_data:
+  logs_volume:
+
+networks:
+  arthub-network:
