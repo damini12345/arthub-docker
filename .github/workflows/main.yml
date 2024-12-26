@@ -24,4 +24,4 @@ jobs:
           IMAGE_NAME: arthub
         run: |
           docker build -t $DOCKERHUB_USERNAME/$IMAGE_NAME .
-          docker push $DOCKERHUB_USERNAME/$IMAGE_NAME:v4.0
+          docker push $DOCKERHUB_USERNAME/$IMAGE_NAME:latest
